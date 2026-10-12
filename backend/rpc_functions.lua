@@ -69,8 +69,6 @@ end
 ---@param to_currency string ISO 4217 code
 ---@return number rate (0 = error)
 function get_rate(from_currency, to_currency)
-	logger:info(string.format("get_rate called: arg1=%s(%s) arg2=%s(%s)",
-		tostring(from_currency), type(from_currency), tostring(to_currency), type(to_currency)))
 	if type(from_currency) ~= "string" or type(to_currency) ~= "string" then
 		return 0
 	end

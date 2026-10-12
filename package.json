@@ -6,7 +6,8 @@
   "devDependencies": {
     "@steambrew/ttc": "^3.3.7",
     "@types/react": "19.1.1",
-    "@types/react-dom": "19.1.1"
+    "@types/react-dom": "19.1.1",
+    "fengari": "^0.1.5"
   },
   "dependencies": {
     "@steambrew/client": "^5.8.5",

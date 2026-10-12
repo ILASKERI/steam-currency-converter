@@ -1,0 +1,11 @@
+{
+  "$schema": "https://raw.githubusercontent.com/SteamClientHomebrew/Millennium/main/src/sys/plugin-schema.json",
+  "name": "steam-currency-converter",
+  "common_name": "Steam Currency Converter",
+  "description": "Converts Steam store prices from your account currency to a chosen currency using live exchange rates.",
+  "author": "ender",
+  "version": "1.0.0",
+  "useBackend": true,
+  "backendType": "lua",
+  "frontend": "frontend"
+}

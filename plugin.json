@@ -3,7 +3,7 @@
   "name": "steam-currency-converter",
   "common_name": "Steam Currency Converter",
   "description": "Converts Steam store prices from your account currency to a chosen currency using live exchange rates.",
-  "author": "ender",
+  "author": "LASKER",
   "version": "1.0.0",
   "useBackend": true,
   "backendType": "lua",

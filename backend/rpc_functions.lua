@@ -110,12 +110,64 @@ function get_settings()
 		enabled = millennium.config.get("enabled"),
 		targetCurrency = millennium.config.get("targetCurrency"),
 		displayMode = millennium.config.get("displayMode"),
+		steamPricing = millennium.config.get("steamPricing"),
 	})
 	if not ok then
 		logger:error("get_settings encode failed: " .. tostring(out))
-		return '{"enabled":true,"targetCurrency":"RUB","displayMode":"next"}'
+		return '{"enabled":true,"targetCurrency":"RUB","displayMode":"next","steamPricing":false}'
 	end
 	return out
 end
 
+---@ffi
+--- Quick currency switch from webkit (Alt+C popup).
+---@param target_currency string ISO 4217 code
+---@return boolean success
+function set_currency(target_currency)
+	if type(target_currency) ~= "string" or #target_currency ~= 3 then
+		return false
+	end
+	millennium.config.set("targetCurrency", target_currency:upper())
+	return true
+end
+
+---@ffi
+--- Generic settings setter for the webkit quick panel.
+---@param key string setting key (enabled / displayMode / targetCurrency)
+---@param value any new value
+---@return boolean success
+function set_setting(key, value)
+	local allowed = { enabled = "boolean", targetCurrency = "string", displayMode = "string" }
+	local expected = allowed[key]
+	if not expected or type(value) ~= expected then
+		return false
+	end
+	if key == "displayMode" and value ~= "next" and value ~= "replace" then
+		return false
+	end
+	if key == "targetCurrency" and (#value ~= 3) then
+		return false
+	end
+	millennium.config.set(key, value)
+	return true
+end
+
+---@ffi
+--- Check GitHub for the latest release tag (CSP blocks webkit fetches).
+---@return string latest version tag, empty string on failure
+function check_updates()
+	local res = http.get("https://api.github.com/repos/ILASKERI/steam-currency-converter/releases/latest", {
+		headers = { ["Accept"] = "application/vnd.github+json" },
+		timeout = 10,
+		user_agent = "steam-currency-converter-plugin",
+	})
+	if not res or res.status ~= 200 then
+		return ""
+	end
+	local ok, data = pcall(json.decode, res.body)
+	if not ok or type(data) ~= "table" or type(data.tag_name) ~= "string" then
+		return ""
+	end
+	return data.tag_name
+end
 logger:info("RPC functions registered")

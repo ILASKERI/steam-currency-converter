@@ -13,6 +13,9 @@ local function ensure_defaults()
 	if millennium.config.get("displayMode") == nil then
 		millennium.config.set("displayMode", "next")
 	end
+	if millennium.config.get("steamPricing") == nil then
+		millennium.config.set("steamPricing", false)
+	end
 end
 
 local function on_load()

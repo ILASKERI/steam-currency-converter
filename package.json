@@ -1,5 +1,5 @@
 {
-  "license": "GPL-3.0-or-later",
+  "license": "MIT",
   "scripts": {
     "dev": "millennium-ttc --build dev --watch",
     "build": "millennium-ttc --build prod"

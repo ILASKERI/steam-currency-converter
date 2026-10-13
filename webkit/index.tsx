@@ -475,6 +475,11 @@ function detectSteamLanguage(): string {
 	return m ? decodeURIComponent(m[1]).toLowerCase() : 'en';
 }
 
+/** Pick a string by Steam client language */
+function t(ru: string, en: string): string {
+	return detectSteamLanguage() === 'russian' ? ru : en;
+}
+
 function freeTooltipText(): string {
 	return detectSteamLanguage() === 'russian'
 		? 'Бесплатно — это платно, но со скидкой 100%'
@@ -553,6 +558,7 @@ function markFreeTooltip(node: Text): void {
 // ---------------------------------------------------------------------------
 
 const HISTORY_MARKER = 'mcc-history-summary';
+let lastHistoryRowCount = 0;
 
 interface YearTotal {
 	year: string;
@@ -564,8 +570,10 @@ async function buildHistorySummary(): Promise<void> {
 	if (!location.pathname.startsWith('/account/history/')) {
 		return;
 	}
-	if (document.querySelector(`.${HISTORY_MARKER}`)) {
-		return;
+	const rowCount = document.querySelectorAll('table.wallet_history_table tbody tr').length;
+	const existing = document.querySelector(`.${HISTORY_MARKER}`);
+	if (existing && rowCount === lastHistoryRowCount) {
+		return; // nothing new since the last build
 	}
 
 	const tables = document.querySelectorAll('table.wallet_history_table');
@@ -573,6 +581,8 @@ async function buildHistorySummary(): Promise<void> {
 	if (!trs.length) {
 		return;
 	}
+	lastHistoryRowCount = trs.length;
+	existing?.remove();
 
 	const settings = getSettings();
 	const totals = new Map<string, { total: number; currency: string }>();
@@ -623,11 +633,19 @@ async function buildHistorySummary(): Promise<void> {
 	const box = document.createElement('div');
 	box.className = HISTORY_MARKER;
 	box.style.cssText =
-		'margin:16px 0;padding:16px 20px;border-radius:10px;background:linear-gradient(180deg,rgba(16,18,27,.72),rgba(38,46,68,.72));backdrop-filter:blur(16px);border:1px solid rgba(140,160,190,.28);box-shadow:0 12px 32px rgba(0,0,0,.45),inset 0 1px 0 rgba(255,255,255,.07);color:#c6d4df;font-family:Inter,\'Motiva Sans\',Arial,sans-serif;-webkit-font-smoothing:antialiased;';
+		'margin:16px 0;padding:16px 20px;border-radius:10px;background:linear-gradient(180deg,rgba(16,18,27,.72),rgba(38,46,68,.72));backdrop-filter:blur(16px) saturate(150%);-webkit-backdrop-filter:blur(16px) saturate(150%);border:1px solid rgba(140,160,190,.28);box-shadow:0 12px 32px rgba(0,0,0,.45),inset 0 1px 0 rgba(255,255,255,.07);color:#c6d4df;font-family:Inter,\'Motiva Sans\',\'Segoe UI\',Arial,sans-serif;-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale;text-rendering:optimizeLegibility;letter-spacing:-.01em;position:relative;overflow:hidden;';
+
+	const decor = document.createElement('div');
+	decor.style.cssText =
+		'position:absolute;right:22px;top:50%;transform:translateY(-50%);font-size:120px;font-weight:700;opacity:.07;color:#66c0f4;pointer-events:none;line-height:1;font-family:Georgia,serif;';
+	decor.textContent = '\u03A3';
+	const glow = document.createElement('div');
+	glow.style.cssText =
+		'position:absolute;left:-40px;top:-40px;width:220px;height:220px;background:radial-gradient(circle,rgba(255,117,26,.10) 0%,transparent 70%);pointer-events:none;';
 
 	const title = document.createElement('div');
 	title.style.cssText = 'font-size:17px;font-weight:700;color:#eef1f8;letter-spacing:-.02em;margin-bottom:4px;';
-	title.textContent = 'Всего потрачено в Steam';
+	title.textContent = t('Всего потрачено в Steam', 'Total spent on Steam');
 	const accent = document.createElement('div');
 	accent.style.cssText = 'width:64px;height:3px;background:#ff751a;border-radius:2px;margin:0 0 12px 0;';
 
@@ -643,10 +661,16 @@ async function buildHistorySummary(): Promise<void> {
 		byYear.appendChild(span);
 	}
 
-	box.appendChild(title);
-	box.appendChild(accent);
-	box.appendChild(grandLine);
-	box.appendChild(byYear);
+	box.appendChild(decor);
+	box.appendChild(glow);
+
+	const content = document.createElement('div');
+	content.style.cssText = 'position:relative;';
+	box.appendChild(content);
+	content.appendChild(title);
+	content.appendChild(accent);
+	content.appendChild(grandLine);
+	content.appendChild(byYear);
 
 	const container = document.querySelector('.accountbilling_content') ?? tables[0].parentElement;
 	if (container) {
@@ -855,11 +879,14 @@ function renderQuickHeader(): void {
 	const onBtn = currencyPanel.querySelector('.mcc-btn-enabled');
 	const modeBtn = currencyPanel.querySelector('.mcc-btn-mode');
 	if (onBtn) {
-		onBtn.textContent = cachedSettings.enabled ? '● ON' : '○ OFF';
+		onBtn.textContent = cachedSettings.enabled ? t('● Вкл', '● ON') : t('○ Выкл', '○ OFF');
 		onBtn.classList.toggle('mcc-off', !cachedSettings.enabled);
 	}
 	if (modeBtn) {
-		modeBtn.textContent = cachedSettings.displayMode === 'replace' ? 'Mode: Replace' : 'Mode: Next to price';
+		modeBtn.textContent =
+			cachedSettings.displayMode === 'replace'
+				? t('Режим: замена', 'Mode: Replace')
+				: t('Режим: рядом', 'Mode: Next');
 	}
 }
 
@@ -904,21 +931,21 @@ function versionToNum(v: string): number {
 }
 
 async function checkForUpdate(statusEl: HTMLElement): Promise<void> {
-	statusEl.textContent = '…проверяем';
+	statusEl.textContent = t('…проверяем', 'Checking…');
 	statusEl.classList.remove('mcc-upd');
 	try {
 		const tag = await checkUpdatesRpc();
 		const latest = (tag ?? '').replace(/^v/, '');
 		if (latest && versionToNum(latest) > versionToNum(MCC_VERSION)) {
-			statusEl.textContent = `доступна v${latest} →`;
+			statusEl.textContent = t(`доступна v${latest} →`, `v${latest} available →`);
 			statusEl.classList.add('mcc-upd');
 		} else if (latest) {
-			statusEl.textContent = 'актуальна ✓';
+			statusEl.textContent = t('актуальна ✓', 'Up to date ✓');
 		} else {
-			statusEl.textContent = 'ошибка проверки';
+			statusEl.textContent = t('ошибка проверки', 'Check failed');
 		}
 	} catch {
-		statusEl.textContent = 'ошибка проверки';
+		statusEl.textContent = t('ошибка проверки', 'Check failed');
 	}
 }
 
@@ -949,7 +976,7 @@ function openCurrencyPanel(): void {
 
 	const input = document.createElement('input');
 	input.type = 'text';
-	input.placeholder = 'Поиск валюты / Search currency…';
+	input.placeholder = t('Поиск валюты…', 'Search currency…');
 	const list = document.createElement('ul');
 
 	const footer = document.createElement('div');
@@ -959,7 +986,7 @@ function openCurrencyPanel(): void {
 	ver.textContent = `v${MCC_VERSION}`;
 	const status = document.createElement('span');
 	status.className = 'mcc-ver-status';
-	status.textContent = 'проверить обновление';
+	status.textContent = t('проверить обновление', 'Check for updates');
 	status.addEventListener('click', (e) => {
 		e.stopPropagation();
 		void checkForUpdate(status);
@@ -969,7 +996,7 @@ function openCurrencyPanel(): void {
 
 	const note = document.createElement('div');
 	note.className = 'mcc-note';
-	note.textContent = 'Alt+C — переключить · Esc — закрыть';
+	note.textContent = t('Alt+C — переключить · Esc — закрыть', 'Alt+C — toggle · Esc — close');
 	panel.appendChild(title);
 	panel.appendChild(underline);
 	panel.appendChild(header);

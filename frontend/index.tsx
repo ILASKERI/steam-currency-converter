@@ -213,8 +213,8 @@ const CURRENCY_OPTIONS = CURRENCIES.map((c) => ({
 }));
 
 const DISPLAY_MODE_OPTIONS = [
-	{ data: 'next', label: 'Рядом с оригиналом (1 499 ₸ ≈ 275 ₽)' },
-	{ data: 'replace', label: 'Заменить цену (275 ₽)' },
+	{ data: 'next', label: 'Рядом с оригиналом / Next to original (1 499 ₸ ≈ 275 ₽)' },
+	{ data: 'replace', label: 'Заменить цену / Replace price (275 ₽)' },
 ];
 
 const SettingsContent = () => {
@@ -228,14 +228,14 @@ const SettingsContent = () => {
 	return (
 		<div style={{ display: 'flex', flexDirection: 'column', gap: '8px', padding: '4px 0' }}>
 			<ToggleField
-				label="Конвертировать цены"
-				description="Показывать цены магазина Steam в выбранной валюте"
+				label="Конвертировать цены / Convert prices"
+				description="Показывать цены магазина Steam в выбранной валюте — Show Steam store prices in the selected currency"
 				checked={enabled ?? true}
 				onChange={(value: boolean) => setEnabled(value)}
 			/>
 			<Field
-				label="Целевая валюта"
-				description="Валюта, в которую конвертируются цены"
+				label="Целевая валюта / Target currency"
+				description="Валюта, в которую конвертируются цены — The currency prices are converted into"
 				bottomSeparator="standard"
 			>
 				<Dropdown
@@ -246,8 +246,8 @@ const SettingsContent = () => {
 				/>
 			</Field>
 			<Field
-				label="Режим отображения"
-				description="Как показывать конвертированную цену"
+				label="Режим отображения / Display mode"
+				description="Как показывать конвертированную цену — How the converted price is shown"
 				bottomSeparator="standard"
 			>
 				<Dropdown

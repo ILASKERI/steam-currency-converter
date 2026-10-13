@@ -14,15 +14,24 @@ If your account is in tenge, euros, rubles, or any other currency — the plugin
 
 | Where | What |
 |---|---|
-| Steam store pages (in the client) | Game, DLC and discount prices, cart |
+| Steam store pages (in the client) | Game, DLC and discount prices, cart, wishlist |
 | Steam client header | Wallet balance next to your avatar |
+| Purchase history page | Total spent summary with per-year breakdown |
 
 Two display modes:
 
 - **Next to original** — `190,45€ ≈ $224.14`
 - **Replace price** — `$224.14`
 
-Exchange rates are fetched from [open.er-api.com](https://www.exchangerate-api.com/) and cached for 24 hours.
+Extras:
+
+- **Alt+C quick panel** (or the floating currency button) — switch currency, toggle conversion and display mode without opening settings. Draggable and remembers its position
+- **Rate tooltip** — hover any converted price to see the exchange rate used
+- **"Free = paid with 100% discount"** — a cheeky tooltip on free games (RU/EN, follows your Steam language)
+- **Purchase history summary** — a block on top of your account history page with total spending by year (purchases only)
+- **Update checker** — the panel footer checks GitHub for new releases
+
+Exchange rates are fetched from [open.er-api.com](https://www.exchangerate-api.com/) and cached for 24 hours. UI language (RU/EN) follows your Steam client language.
 
 ## Requirements
 

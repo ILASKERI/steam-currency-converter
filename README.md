@@ -2,6 +2,9 @@
 
 [![RU](https://img.shields.io/badge/README-%D0%A0%D1%83%D1%81%D1%81%D0%BA%D0%B8%D0%B9-red)](README.ru.md)
 [![VirusTotal](https://img.shields.io/badge/VirusTotal-Clean-brightgreen)](https://www.virustotal.com/gui/file/990880dfde1f098ca7a2568cff3e53b17832986dae05544fef4602915a980c98/detection)
+[![Release](https://img.shields.io/github/v/release/ILASKERI/steam-currency-converter)](../../releases)
+[![License](https://img.shields.io/github/license/ILASKERI/steam-currency-converter)](LICENSE)
+[![Stars](https://img.shields.io/github/stars/ILASKERI/steam-currency-converter)](../../stargazers)
 
 A [Millennium](https://github.com/SteamClientHomebrew/Millennium) plugin that shows Steam store prices and your wallet balance in the currency of your choice.
 
@@ -79,6 +82,13 @@ Lua backend changes require a full Steam restart; JS bundles are picked up on UI
 - The **webkit script** is injected into Steam store pages, finds text nodes with prices and converts them using rates from the backend.
 - The **Lua backend** downloads exchange rates, caches them, and serves them on request.
 - The **frontend module** locates the wallet balance element in the main Steam window via Chrome DevTools Protocol and converts it.
+
+## Roadmap / Planned
+
+- [ ] Price conversion on the cart and wishlist pages (verification & polish)
+- [ ] Tooltip showing the exchange rate used on hover
+- [ ] Quick currency switch without opening settings
+- [ ] Steam-style price rounding (e.g. `.99` endings)
 
 ## Troubleshooting
 

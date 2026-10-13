@@ -2,6 +2,9 @@
 
 [![EN](https://img.shields.io/badge/README-English-blue)](README.md)
 [![VirusTotal](https://img.shields.io/badge/VirusTotal-%D0%A7%D0%B8%D1%81%D1%82%D0%BE-brightgreen)](https://www.virustotal.com/gui/file/990880dfde1f098ca7a2568cff3e53b17832986dae05544fef4602915a980c98/detection)
+[![Release](https://img.shields.io/github/v/release/ILASKERI/steam-currency-converter)](../../releases)
+[![License](https://img.shields.io/github/license/ILASKERI/steam-currency-converter)](LICENSE)
+[![Stars](https://img.shields.io/github/stars/ILASKERI/steam-currency-converter)](../../stargazers)
 
 Плагин для [Millennium](https://github.com/SteamClientHomebrew/Millennium), который показывает цены магазина Steam и баланс кошелька в выбранной вами валюте.
 
@@ -79,6 +82,13 @@ steam-currency-converter/
 - **webkit-скрипт** внедряется в страницы магазина Steam, находит текстовые узлы с ценами и конвертирует их по курсам из бэкенда.
 - **Lua-бэкенд** скачивает курсы валют, кэширует их и отдаёт по запросу.
 - **Frontend-модуль** через Chrome DevTools Protocol находит элемент баланса кошелька в главном окне Steam и конвертирует его.
+
+## Планы / Roadmap
+
+- [ ] Конвертация цен в корзине и списке желаемого (проверка и полировка)
+- [ ] Тултип с использованным курсом при наведении
+- [ ] Быстрое переключение валюты без открытия настроек
+- [ ] «Steam-подобное» округление цен (окончания `.99`)
 
 ## Устранение неполадок
 

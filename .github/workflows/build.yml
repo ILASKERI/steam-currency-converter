@@ -1,0 +1,59 @@
+name: Build
+
+on:
+  push:
+    branches: [main]
+    tags: ['v*']
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v2
+
+      - name: Install dependencies
+        run: bun install --frozen-lockfile
+
+      - name: Build plugin
+        run: bun run build
+
+      - name: Package
+        run: |
+          mkdir -p dist-pkg/steam-currency-converter
+          cp plugin.json dist-pkg/steam-currency-converter/
+          cp -r backend dist-pkg/steam-currency-converter/
+          cp -r .millennium/Dist dist-pkg/steam-currency-converter/.millennium-dist
+          mkdir -p dist-pkg/steam-currency-converter/.millennium
+          mv dist-pkg/steam-currency-converter/.millennium-dist dist-pkg/steam-currency-converter/.millennium/Dist
+          cp README.md dist-pkg/
+          cp LICENSE dist-pkg/
+          cp THIRD_PARTY_LICENSES.md dist-pkg/
+          cd dist-pkg
+          zip -r "../steam-currency-converter-${GITHUB_REF_NAME}.zip" .
+          cd ..
+          sha256sum "steam-currency-converter-${GITHUB_REF_NAME}.zip" | awk '{print toupper($1)}' > "steam-currency-converter-${GITHUB_REF_NAME}.zip.sha256"
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: steam-currency-converter-${{ github.ref_name }}
+          path: |
+            steam-currency-converter-*.zip
+            steam-currency-converter-*.zip.sha256
+
+      - name: Create release
+        if: startsWith(github.ref, 'refs/tags/v')
+        uses: softprops/action-gh-release@v2
+        with:
+          files: |
+            steam-currency-converter-*.zip
+            steam-currency-converter-*.zip.sha256

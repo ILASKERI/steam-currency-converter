@@ -83,13 +83,6 @@ Lua backend changes require a full Steam restart; JS bundles are picked up on UI
 - The **Lua backend** downloads exchange rates, caches them, and serves them on request.
 - The **frontend module** locates the wallet balance element in the main Steam window via Chrome DevTools Protocol and converts it.
 
-## Roadmap / Planned
-
-- [ ] Price conversion on the cart and wishlist pages (verification & polish)
-- [ ] Tooltip showing the exchange rate used on hover
-- [ ] Quick currency switch without opening settings
-- [ ] Steam-style price rounding (e.g. `.99` endings)
-
 ## Troubleshooting
 
 - **Prices don't convert** — make sure the plugin is enabled in Millennium settings and Steam was restarted after installation.

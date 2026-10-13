@@ -1,64 +1,64 @@
 # Steam Currency Converter
 
-[![EN](https://img.shields.io/badge/README-English-blue)](README.en.md)
+[![RU](https://img.shields.io/badge/README-%D0%A0%D1%83%D1%81%D1%81%D0%BA%D0%B8%D0%B9-red)](README.ru.md)
 
-Плагин для [Millennium](https://github.com/SteamClientHomebrew/Millennium), который показывает цены магазина Steam и баланс кошелька в выбранной вами валюте.
+A [Millennium](https://github.com/SteamClientHomebrew/Millennium) plugin that shows Steam store prices and your wallet balance in the currency of your choice.
 
-Если ваш аккаунт в тенге, евро, рублях или любой другой валюте — плагин конвертирует всё в удобную: доллары, рубли, евро и ещё 40+ валют, по актуальным курсам.
+If your account is in tenge, euros, rubles, or any other currency — the plugin converts everything into the one you pick: USD, EUR, RUB and 40+ more, using up-to-date exchange rates.
 
-## Что конвертируется
+## What it converts
 
-| Где | Что |
+| Where | What |
 |---|---|
-| Страницы магазина Steam (в клиенте) | Цены игр, DLC, скидки, корзина |
-| Шапка клиента Steam | Баланс кошелька рядом с аватаркой |
+| Steam store pages (in the client) | Game, DLC and discount prices, cart |
+| Steam client header | Wallet balance next to your avatar |
 
-Два режима отображения на выбор:
+Two display modes:
 
-- **Рядом с оригиналом** — `190,45€ ≈ $224.14`
-- **Заменить цену** — `$224.14`
+- **Next to original** — `190,45€ ≈ $224.14`
+- **Replace price** — `$224.14`
 
-Курсы валют берутся с [open.er-api.com](https://www.exchangerate-api.com/) и кэшируются на 24 часа.
+Exchange rates are fetched from [open.er-api.com](https://www.exchangerate-api.com/) and cached for 24 hours.
 
-## Требования
+## Requirements
 
-- Steam с установленным [Millennium](https://millennium.patch.sc/) **v3.5.0 или новее**
+- Steam with [Millennium](https://millennium.patch.sc/) **v3.5.0 or newer**
 
-## Установка (для пользователей)
+## Installation (for users)
 
-1. Скачайте архив с плагином и распакуйте его.
-2. Найдите папку `plugins` вашего Millennium:
-   - **Windows:** `<путь к Steam>\millennium\plugins\` (например `C:\Program Files (x86)\Steam\millennium\plugins\`)
+1. Download the plugin from [Releases](../../releases) and unpack it.
+2. Find your Millennium `plugins` folder:
+   - **Windows:** `<path to Steam>\millennium\plugins\` (e.g. `C:\Program Files (x86)\Steam\millennium\plugins\`)
    - **Linux:** `~/.local/share/millennium/plugins/`
-3. Скопируйте туда папку `steam-currency-converter` — так, чтобы файл `plugin.json` лежал по пути `plugins\steam-currency-converter\plugin.json`.
-4. Полностью перезапустите Steam.
-5. Откройте настройки Millennium → Плагины → включите **Steam Currency Converter** → нажмите Save.
-6. Ещё раз перезапустите Steam.
+3. Copy the `steam-currency-converter` folder there, so that `plugin.json` ends up at `plugins\steam-currency-converter\plugin.json`.
+4. Fully restart Steam.
+5. Open Millennium Settings → Plugins → enable **Steam Currency Converter** → hit Save.
+6. Restart Steam once more.
 
-Готово! Откройте страницу любой игры в магазине — цены будут конвертироваться.
+Done! Open any game page in the store — prices will be converted.
 
-## Настройка
+## Settings
 
-Откройте настройки Millennium → Плагины → **Steam Currency Converter**:
+Open Millennium Settings → Plugins → **Steam Currency Converter**:
 
-- **Конвертировать цены** — включить/выключить плагин
-- **Целевая валюта** — в какую валюту конвертировать (USD, EUR, RUB, KZT и др.)
-- **Режим отображения** — показывать конвертированную цену рядом с оригиналом или заменять её
+- **Convert prices** — enable/disable the plugin
+- **Target currency** — the currency to convert into (USD, EUR, RUB, KZT, etc.)
+- **Display mode** — show the converted price next to the original, or replace it
 
-Настройки применяются на лету, перезапускать Steam не нужно (максимум — пара секунд).
+Settings apply on the fly — no Steam restart needed (give it a couple of seconds).
 
-## Сборка из исходников (для разработчиков)
+## Building from source (for developers)
 
-Нужен [Bun](https://bun.com/) >= 1.0.
+Requires [Bun](https://bun.com/) >= 1.0.
 
 ```bash
-git clone <этот репозиторий>
+git clone https://github.com/ILASKERI/steam-currency-converter.git
 cd steam-currency-converter
 bun install
 bun run build
 ```
 
-Собранные файлы появятся в `.millennium/Dist/`. Скопируйте содержимое проекта (см. список ниже) в папку `plugins` Millennium:
+Built bundles appear in `.millennium/Dist/`. Copy the following into your Millennium `plugins` folder:
 
 ```
 steam-currency-converter/
@@ -67,33 +67,28 @@ steam-currency-converter/
 │   ├── main.lua
 │   └── rpc_functions.lua
 └── .millennium/Dist/
-    ├── index.js      # панель настроек + конвертер баланса (CDP)
-    └── webkit.js     # конвертер цен на страницах магазина
+    ├── index.js      # settings panel + wallet balance converter (CDP)
+    └── webkit.js     # store page price converter
 ```
 
-После изменения Lua-файлов требуется полный перезапуск Steam; JS-бандлы подхватываются при перезагрузке интерфейса (или страницы магазина).
+Lua backend changes require a full Steam restart; JS bundles are picked up on UI reload (or a store page reload).
 
-## Как это работает
+## How it works
 
-- **webkit-скрипт** внедряется в страницы магазина Steam, находит текстовые узлы с ценами и конвертирует их по курсам из бэкенда.
-- **Lua-бэкенд** скачивает курсы валют, кэширует их и отдаёт по запросу.
-- **Frontend-модуль** через Chrome DevTools Protocol находит элемент баланса кошелька в главном окне Steam и конвертирует его.
+- The **webkit script** is injected into Steam store pages, finds text nodes with prices and converts them using rates from the backend.
+- The **Lua backend** downloads exchange rates, caches them, and serves them on request.
+- The **frontend module** locates the wallet balance element in the main Steam window via Chrome DevTools Protocol and converts it.
 
-## Устранение неполадок
+## Troubleshooting
 
-- **Цены не конвертируются** — проверьте, что плагин включён в настройках Millennium и Steam был перезапущен после установки.
-- **Логи плагина:**
-  - Бэкенд: `<Steam>\millennium\logs\steam-currency-converter_log.log`
-  - Webkit/frontend: `<Steam>\logs\webhelper_js.txt` (строки с `[mcc]` и `[mcc-fe]`)
-- **Курсы не грузятся** — проверьте доступ к `open.er-api.com` (прокси/файрвол). При недоступности API плагин не сломает страницу — просто временно не будет конвертировать.
+- **Prices don't convert** — make sure the plugin is enabled in Millennium settings and Steam was restarted after installation.
+- **Plugin logs:**
+  - Backend: `<Steam>\millennium\logs\steam-currency-converter_log.log`
+  - Webkit/frontend: `<Steam>\logs\webhelper_js.txt` (lines with `[mcc]` and `[mcc-fe]`)
+- **Rates fail to load** — check access to `open.er-api.com` (proxy/firewall). When the API is unreachable the plugin degrades gracefully — pages stay intact, conversion just pauses.
 
-## Структура репозитория
+## License
 
-- `main` — стабильная рабочая версия
-- `tests` — ветка для экспериментов
+This plugin is licensed under **GPL-3.0** (author — LASKER): you are free to use, modify and redistribute it, but derivative projects must also stay open under GPL-3.0. Full text — see [LICENSE](LICENSE).
 
-## Лицензия
-
-Код плагина распространяется по лицензии **GPL-3.0** (автор — LASKER): можно свободно использовать, изменять и распространять, но производные проекты также должны быть открытыми под GPL-3.0 — закрыть код и продавать его «как свой» нельзя. Полный текст — в файле [LICENSE](LICENSE).
-
-Лицензии встроенных сторонних библиотек — в [THIRD_PARTY_LICENSES.md](THIRD_PARTY_LICENSES.md).
+Licenses of the bundled third-party libraries — see [THIRD_PARTY_LICENSES.md](THIRD_PARTY_LICENSES.md).

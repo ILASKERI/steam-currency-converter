@@ -2,6 +2,8 @@ local logger     = require("logger")
 local millennium = require("millennium")
 local http       = require("http")
 local json       = require("json")
+local fs         = require("fs")
+local utils      = require("utils")
 
 local RATES_URL = "https://open.er-api.com/v6/latest/USD"
 local CACHE_TTL = 24 * 3600
@@ -169,5 +171,86 @@ function check_updates()
 		return ""
 	end
 	return data.tag_name
+end
+
+local UPDATE_FILES = {
+	"plugin.json",
+	"backend/main.lua",
+	"backend/rpc_functions.lua",
+	".millennium/Dist/index.js",
+	".millennium/Dist/webkit.js",
+}
+
+local function find_plugin_base()
+	local candidates = { ".", fs.current_path() }
+	for _, cand in ipairs(candidates) do
+		if cand and fs.exists(fs.join(cand, "plugin.json")) then
+			return fs.absolute(cand)
+		end
+	end
+	return nil
+end
+
+---@ffi
+--- One-click self-update: download release files from GitHub and swap them in.
+---@return string "ok <tag>" on success, "err <reason>" on failure
+function self_update()
+	local tag = check_updates()
+	if not tag or tag == "" then
+		return "err: could not fetch latest release"
+	end
+	tag = tag:gsub("^v", "")
+
+	local base = find_plugin_base()
+	if not base then
+		return "err: plugin directory not found"
+	end
+	logger:info("self_update: base=" .. tostring(base) .. " tag=" .. tag)
+
+	local list = table.concat(
+		(function()
+			local t = {}
+			for _, f in ipairs(UPDATE_FILES) do
+				t[#t + 1] = "'" .. f .. "'"
+			end
+			return t
+		end)(),
+		","
+	)
+
+	local ps = [[powershell -NoProfile -ExecutionPolicy Bypass -Command "$ErrorActionPreference='Stop'; $files=@(]]
+		.. list
+		.. [[); foreach($x in $files){ $u='https://raw.githubusercontent.com/ILASKERI/steam-currency-converter/v]]
+		.. tag
+		.. [[' + '/' + $x; $o=Join-Path ']]
+		.. base
+		.. [[' ($x + '.mccnew'); New-Item -ItemType Directory -Force -Path (Split-Path $o) | Out-Null; Invoke-WebRequest -Uri $u -OutFile $o -UseBasicParsing; if((Get-Item $o).Length -eq 0){ throw ('empty download: ' + $x) } }"]]
+
+	local output, status = utils.exec(ps)
+	logger:info("self_update: download status=" .. tostring(status) .. " out=" .. tostring(output):sub(1, 200))
+	if status ~= 0 then
+		return "err: download failed (" .. tostring(status) .. ")"
+	end
+
+	-- verify all staged files exist, then swap atomically
+	for _, f in ipairs(UPDATE_FILES) do
+		local staged = fs.join(base, f .. ".mccnew")
+		if not fs.exists(staged) then
+			return "err: staged file missing " .. f
+		end
+	end
+	for _, f in ipairs(UPDATE_FILES) do
+		local staged = fs.join(base, f .. ".mccnew")
+		local target = fs.join(base, f)
+		fs.remove(target)
+		local ok, err = fs.rename(staged, target)
+		if not ok then
+			logger:error("self_update: rename failed for " .. f .. ": " .. tostring(err))
+			return "err: swap failed " .. f
+		end
+	end
+
+	logger:info("self_update: updated to v" .. tag)
+	return "ok v" .. tag
 end
 logger:info("RPC functions registered")

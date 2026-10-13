@@ -5,6 +5,7 @@ const getRateRpc = callable<[{ from_currency: string; to_currency: string }], nu
 const getSettingsRpc = callable<[], string>('get_settings');
 const setSettingRpc = callable<[{ key: string; value: unknown }], boolean>('set_setting');
 const checkUpdatesRpc = callable<[], string>('check_updates');
+const selfUpdateRpc = callable<[], string>('self_update');
 
 interface Settings {
 	enabled: boolean;
@@ -26,7 +27,7 @@ const DEFAULT_SETTINGS: Settings = { enabled: true, targetCurrency: 'RUB', displ
 const CONVERTED_CLASS = 'mcc-converted';
 const MAX_TEXT_LENGTH = 80;
 const RATE_FAIL_TTL = 60_000;
-const MCC_VERSION = '1.1.0';
+const MCC_VERSION = '1.2.0';
 
 let cachedSettings: Settings = { ...DEFAULT_SETTINGS };
 const rateCache = new Map<string, number>();
@@ -757,6 +758,7 @@ function injectStyle(): void {
 .mcc-cursel .mcc-ver{opacity:.9;}
 .mcc-cursel .mcc-ver-status{cursor:pointer;text-decoration:underline dotted;}
 .mcc-cursel .mcc-ver-status.mcc-upd{color:#ff751a;font-weight:700;text-decoration:none;}
+.mcc-cursel .mcc-ver-status.mcc-done{color:#a3d977;font-weight:700;text-decoration:none;}
 .mcc-cursel .mcc-note{font-size:11px;color:#67c1f5;margin-top:6px;text-align:center;opacity:.8;}
 .mcc-cursel .mcc-title{cursor:grab;user-select:none;touch-action:none;-webkit-user-drag:none;}
 .mcc-cursel .mcc-title:active{cursor:grabbing;}
@@ -989,15 +991,34 @@ async function checkForUpdate(statusEl: HTMLElement): Promise<void> {
 		const tag = await checkUpdatesRpc();
 		const latest = (tag ?? '').replace(/^v/, '');
 		if (latest && versionToNum(latest) > versionToNum(MCC_VERSION)) {
-			statusEl.textContent = t(`доступна v${latest} →`, `v${latest} available →`);
+			statusEl.textContent = t(`доступна v${latest} — обновить →`, `v${latest} available — Update →`);
 			statusEl.classList.add('mcc-upd');
+			statusEl.onclick = () => void runSelfUpdate(statusEl, latest);
 		} else if (latest) {
 			statusEl.textContent = t('актуальна ✓', 'Up to date ✓');
+			statusEl.onclick = null;
 		} else {
 			statusEl.textContent = t('ошибка проверки', 'Check failed');
 		}
 	} catch {
 		statusEl.textContent = t('ошибка проверки', 'Check failed');
+	}
+}
+
+async function runSelfUpdate(statusEl: HTMLElement, latest: string): Promise<void> {
+	statusEl.textContent = t('…скачиваем обновление', '…downloading update');
+	try {
+		const result = await selfUpdateRpc();
+		if (typeof result === 'string' && result.startsWith('ok')) {
+			statusEl.textContent = t('✓ обновлено! перезапусти Steam', '✓ updated! restart Steam');
+			statusEl.classList.remove('mcc-upd');
+			statusEl.classList.add('mcc-done');
+		} else {
+			statusEl.textContent = t('ошибка: ' + String(result), 'error: ' + String(result));
+		}
+	} catch (e) {
+		statusEl.textContent = t('ошибка обновления', 'Update failed');
+		void latest;
 	}
 }
 
@@ -1041,7 +1062,9 @@ function openCurrencyPanel(): void {
 	status.textContent = t('проверить обновление', 'Check for updates');
 	status.addEventListener('click', (e) => {
 		e.stopPropagation();
-		void checkForUpdate(status);
+		if (!status.classList.contains('mcc-upd')) {
+			void checkForUpdate(status);
+		}
 	});
 	footer.appendChild(ver);
 	footer.appendChild(status);

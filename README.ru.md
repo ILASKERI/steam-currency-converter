@@ -1,6 +1,7 @@
 # Steam Currency Converter
 
 [![EN](https://img.shields.io/badge/README-English-blue)](README.md)
+[![VirusTotal](https://img.shields.io/badge/VirusTotal-%D0%A7%D0%B8%D1%81%D1%82%D0%BE-brightgreen)](https://www.virustotal.com/gui/file/990880dfde1f098ca7a2568cff3e53b17832986dae05544fef4602915a980c98/detection)
 
 Плагин для [Millennium](https://github.com/SteamClientHomebrew/Millennium), который показывает цены магазина Steam и баланс кошелька в выбранной вами валюте.
 

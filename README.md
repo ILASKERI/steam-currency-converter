@@ -1,20 +1,91 @@
-# Plugin Template
+# Steam Currency Converter
 
-A plugin template for Millennium providing a basic boilerplate to help get started.
+Плагин для [Millennium](https://github.com/SteamClientHomebrew/Millennium), который показывает цены магазина Steam и баланс кошелька в выбранной вами валюте.
 
-## Prerequisites
+Если ваш аккаунт в тенге, евро, рублях или любой другой валюте — плагин конвертирует всё в удобную: доллары, рубли, евро и ещё 40+ валют, по актуальным курсам.
 
-- **[Millennium](https://github.com/SteamClientHomebrew/Millennium)** >= v3.4.0
-- **[Bun](https://bun.com/)** >= v1.0.0
+## Что конвертируется
 
-## Building
+| Где | Что |
+|---|---|
+| Страницы магазина Steam (в клиенте) | Цены игр, DLC, скидки, корзина |
+| Шапка клиента Steam | Баланс кошелька рядом с аватаркой |
+
+Два режима отображения на выбор:
+
+- **Рядом с оригиналом** — `190,45€ ≈ $224.14`
+- **Заменить цену** — `$224.14`
+
+Курсы валют берутся с [open.er-api.com](https://www.exchangerate-api.com/) и кэшируются на 24 часа.
+
+## Требования
+
+- Steam с установленным [Millennium](https://millennium.patch.sc/) **v3.5.0 или новее**
+
+## Установка (для пользователей)
+
+1. Скачайте архив с плагином и распакуйте его.
+2. Найдите папку `plugins` вашего Millennium:
+   - **Windows:** `<путь к Steam>\millennium\plugins\` (например `C:\Program Files (x86)\Steam\millennium\plugins\`)
+   - **Linux:** `~/.local/share/millennium/plugins/`
+3. Скопируйте туда папку `steam-currency-converter` — так, чтобы файл `plugin.json` лежал по пути `plugins\steam-currency-converter\plugin.json`.
+4. Полностью перезапустите Steam.
+5. Откройте настройки Millennium → Плагины → включите **Steam Currency Converter** → нажмите Save.
+6. Ещё раз перезапустите Steam.
+
+Готово! Откройте страницу любой игры в магазине — цены будут конвертироваться.
+
+## Настройка
+
+Откройте настройки Millennium → Плагины → **Steam Currency Converter**:
+
+- **Конвертировать цены** — включить/выключить плагин
+- **Целевая валюта** — в какую валюту конвертировать (USD, EUR, RUB, KZT и др.)
+- **Режим отображения** — показывать конвертированную цену рядом с оригиналом или заменять её
+
+Настройки применяются на лету, перезапускать Steam не нужно (максимум — пара секунд).
+
+## Сборка из исходников (для разработчиков)
+
+Нужен [Bun](https://bun.com/) >= 1.0.
 
 ```bash
-# Install frontend npm modules
-$ bun install
-
-# Build the plugins frontend
-$ bun run build
+git clone <этот репозиторий>
+cd steam-currency-converter
+bun install
+bun run build
 ```
 
-That's it! Millennium & starlight (plugin compiler) will automatically set up your plugin! You can enable it in Millennium Settings.
+Собранные файлы появятся в `.millennium/Dist/`. Скопируйте содержимое проекта (см. список ниже) в папку `plugins` Millennium:
+
+```
+steam-currency-converter/
+├── plugin.json
+├── backend/
+│   ├── main.lua
+│   └── rpc_functions.lua
+└── .millennium/Dist/
+    ├── index.js      # панель настроек + конвертер баланса (CDP)
+    └── webkit.js     # конвертер цен на страницах магазина
+```
+
+После изменения Lua-файлов требуется полный перезапуск Steam; JS-бандлы подхватываются при перезагрузке интерфейса (или страницы магазина).
+
+## Как это работает
+
+- **webkit-скрипт** внедряется в страницы магазина Steam, находит текстовые узлы с ценами и конвертирует их по курсам из бэкенда.
+- **Lua-бэкенд** скачивает курсы валют, кэширует их и отдаёт по запросу.
+- **Frontend-модуль** через Chrome DevTools Protocol находит элемент баланса кошелька в главном окне Steam и конвертирует его.
+
+## Устранение неполадок
+
+- **Цены не конвертируются** — проверьте, что плагин включён в настройках Millennium и Steam был перезапущен после установки.
+- **Логи плагина:**
+  - Бэкенд: `<Steam>\millennium\logs\steam-currency-converter_log.log`
+  - Webkit/frontend: `<Steam>\logs\webhelper_js.txt` (строки с `[mcc]` и `[mcc-fe]`)
+- **Курсы не грузятся** — проверьте доступ к `open.er-api.com` (прокси/файрвол). При недоступности API плагин не сломает страницу — просто временно не будет конвертировать.
+
+## Структура репозитория
+
+- `main` — стабильная рабочая версия
+- `tests` — ветка для экспериментов

@@ -1,5 +1,7 @@
 # Steam Currency Converter
 
+[![EN](https://img.shields.io/badge/README-English-blue)](README.en.md)
+
 Плагин для [Millennium](https://github.com/SteamClientHomebrew/Millennium), который показывает цены магазина Steam и баланс кошелька в выбранной вами валюте.
 
 Если ваш аккаунт в тенге, евро, рублях или любой другой валюте — плагин конвертирует всё в удобную: доллары, рубли, евро и ещё 40+ валют, по актуальным курсам.

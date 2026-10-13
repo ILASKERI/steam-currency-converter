@@ -27,8 +27,9 @@ Extras:
 
 - **Alt+C quick panel** (or the floating currency button) — switch currency, toggle conversion and display mode without opening settings. Draggable and remembers its position
 - **Rate tooltip** — hover any converted price to see the exchange rate used
-- **Purchase history summary** — a block on top of your account history page with total spending by year (purchases only)
+- **Purchase history summary** — a block on top of your account history page: total spending, a Steam-style bar chart by year, and a one-click "Load more" button
 - **Update checker** — the panel footer checks GitHub for new releases
+- A couple of secrets we won't spoil here
 
 Exchange rates are fetched from [open.er-api.com](https://www.exchangerate-api.com/) and cached for 24 hours. UI language (RU/EN) follows your Steam client language.
 

@@ -637,7 +637,7 @@ async function buildHistorySummary(): Promise<void> {
 
 	const decor = document.createElement('div');
 	decor.style.cssText =
-		'position:absolute;right:22px;top:50%;transform:translateY(-50%);font-size:120px;font-weight:700;opacity:.07;color:#66c0f4;pointer-events:none;line-height:1;font-family:Georgia,serif;';
+		'position:absolute;right:26px;top:22px;font-size:74px;font-weight:700;opacity:.09;color:#66c0f4;pointer-events:none;line-height:1;font-family:Georgia,serif;';
 	decor.textContent = '\u03A3';
 	const glow = document.createElement('div');
 	glow.style.cssText =
@@ -653,12 +653,63 @@ async function buildHistorySummary(): Promise<void> {
 	grandLine.style.cssText = 'font-size:26px;font-weight:700;color:#66c0f4;margin-bottom:10px;';
 	grandLine.textContent = `${formatConverted(grand, grandCurrency)}${grandConverted}`;
 
-	const byYear = document.createElement('div');
-	byYear.style.cssText = 'display:flex;flex-wrap:wrap;gap:10px 22px;font-size:13px;opacity:.85;';
-	for (const y of years.slice().reverse()) {
-		const span = document.createElement('span');
-		span.textContent = `${y.year}: ${formatConverted(y.amount, y.currency)}`;
-		byYear.appendChild(span);
+	const loadMoreBtn = document.createElement('button');
+	loadMoreBtn.type = 'button';
+	loadMoreBtn.textContent = t('↓ Загрузить ещё транзакции', '↓ Load more transactions');
+	loadMoreBtn.style.cssText =
+		'margin-top:12px;display:block;margin-left:auto;margin-right:auto;width:fit-content;padding:7px 18px;border-radius:999px;background:rgba(13,19,28,.7);color:#66c0f4;border:1px solid #2a475e;font-family:inherit;font-size:12.5px;font-weight:500;letter-spacing:-.01em;cursor:pointer;transition:background .12s ease,color .12s ease;-webkit-font-smoothing:antialiased;';
+	loadMoreBtn.addEventListener('mouseenter', () => (loadMoreBtn.style.background = '#2a475e'));
+	loadMoreBtn.addEventListener('mouseleave', () => (loadMoreBtn.style.background = 'rgba(13,19,28,.7)'));
+	loadMoreBtn.addEventListener('click', () => {
+		const before = document.querySelectorAll('table.wallet_history_table tbody tr').length;
+		const candidates = Array.from(document.querySelectorAll('a, button, div')).filter((el) => {
+			const text = (el.textContent ?? '').trim();
+			return (
+				text.length < 60 &&
+				(/^загруз/i.test(text) || /^(load|show) more/i.test(text)) &&
+				el !== loadMoreBtn &&
+				!loadMoreBtn.contains(el) &&
+				(el as HTMLElement).offsetParent !== null
+			);
+		});
+		console.log(
+			'[mcc] load-more clicking:',
+			JSON.stringify(candidates.map((el) => `${el.tagName}.${(el.className || '').toString().slice(0, 30)}`)),
+		);
+		for (const el of candidates) {
+			(el as HTMLElement).click();
+		}
+		loadMoreBtn.textContent = t('…загружаем', '…loading');
+		setTimeout(() => {
+			const after = document.querySelectorAll('table.wallet_history_table tbody tr').length;
+			console.log(`[mcc] load-more result: rows ${before} -> ${after}`);
+			loadMoreBtn.textContent = t('↓ Загрузить ещё транзакции', '↓ Load more transactions');
+		}, 2500);
+	});
+
+	const chart = document.createElement('div');
+	chart.style.cssText =
+		'display:flex;align-items:flex-end;gap:14px;height:130px;margin-top:14px;padding:8px 4px 0;border-top:1px solid rgba(140,160,190,.15);';
+	const maxTotal = Math.max(...years.map((y) => y.amount));
+	for (const y of years) {
+		const col = document.createElement('div');
+		col.style.cssText =
+			'flex:1;max-width:110px;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;height:100%;';
+		const amount = document.createElement('div');
+		amount.style.cssText = 'font-size:10.5px;color:#8f98a0;margin-bottom:4px;white-space:nowrap;';
+		amount.textContent = formatConverted(y.amount, y.currency);
+		const bar = document.createElement('div');
+		const barHeight = Math.max(4, Math.round((y.amount / maxTotal) * 78));
+		bar.style.cssText = `width:68%;min-width:26px;height:${barHeight}px;background:linear-gradient(180deg,#66c0f4 0%,#1a68a2 100%);border-radius:3px 3px 0 0;box-shadow:inset 0 1px 0 rgba(255,255,255,.3);transition:filter .12s ease;cursor:default;`;
+		bar.addEventListener('mouseenter', () => (bar.style.filter = 'brightness(1.25)'));
+		bar.addEventListener('mouseleave', () => (bar.style.filter = ''));
+		const yearLabel = document.createElement('div');
+		yearLabel.style.cssText = 'font-size:12px;color:#67c1f5;margin-top:5px;';
+		yearLabel.textContent = y.year;
+		col.appendChild(amount);
+		col.appendChild(bar);
+		col.appendChild(yearLabel);
+		chart.appendChild(col);
 	}
 
 	box.appendChild(decor);
@@ -670,7 +721,8 @@ async function buildHistorySummary(): Promise<void> {
 	content.appendChild(title);
 	content.appendChild(accent);
 	content.appendChild(grandLine);
-	content.appendChild(byYear);
+	content.appendChild(chart);
+	content.appendChild(loadMoreBtn);
 
 	const container = document.querySelector('.accountbilling_content') ?? tables[0].parentElement;
 	if (container) {

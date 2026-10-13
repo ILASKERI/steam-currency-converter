@@ -902,14 +902,14 @@ function renderCurrencyList(filter: string): void {
 	const current = cachedSettings.targetCurrency;
 	list.innerHTML = '';
 	for (const c of CURRENCIES) {
-		if (q && !c.code.toLowerCase().includes(q) && !c.name.toLowerCase().includes(q)) {
+		if (q && !c.code.toLowerCase().includes(q) && !c.name.toLowerCase().includes(q) && !c.nameEn.toLowerCase().includes(q)) {
 			continue;
 		}
 		const li = document.createElement('li');
 		li.textContent = `${c.code} (${c.symbol})`;
 		const name = document.createElement('span');
 		name.style.opacity = '.6';
-		name.textContent = c.name;
+		name.textContent = t(c.name, c.nameEn);
 		li.appendChild(name);
 		if (c.code === current) {
 			li.classList.add('active');

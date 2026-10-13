@@ -209,7 +209,7 @@ function startBalanceScanner(): void {
 
 const CURRENCY_OPTIONS = CURRENCIES.map((c) => ({
 	data: c.code,
-	label: `${c.code} (${c.symbol}) — ${c.name}`,
+	label: `${c.code} (${c.symbol}) — ${c.nameEn} / ${c.name}`,
 }));
 
 const DISPLAY_MODE_OPTIONS = [

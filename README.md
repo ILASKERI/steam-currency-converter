@@ -27,7 +27,6 @@ Extras:
 
 - **Alt+C quick panel** (or the floating currency button) — switch currency, toggle conversion and display mode without opening settings. Draggable and remembers its position
 - **Rate tooltip** — hover any converted price to see the exchange rate used
-- **"Free = paid with 100% discount"** — a cheeky tooltip on free games (RU/EN, follows your Steam language)
 - **Purchase history summary** — a block on top of your account history page with total spending by year (purchases only)
 - **Update checker** — the panel footer checks GitHub for new releases
 

@@ -1,7 +1,7 @@
 # Steam Currency Converter
 
 [![EN](https://img.shields.io/badge/README-English-blue)](README.md)
-[![Checksums](https://img.shields.io/badge/SHA--256-verified-brightgreen?logo=visualstudiocode&logoColor=white)](../../releases)
+[![Checksums](https://img.shields.io/badge/SHA--256-verified-brightgreen?logo=shieldsio&logoColor=white)](../../releases)
 [![Release](https://img.shields.io/github/v/release/ILASKERI/steam-currency-converter)](../../releases)
 [![License](https://img.shields.io/github/license/ILASKERI/steam-currency-converter)](LICENSE)
 [![Stars](https://img.shields.io/github/stars/ILASKERI/steam-currency-converter)](../../stargazers)

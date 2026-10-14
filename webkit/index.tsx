@@ -587,6 +587,7 @@ async function buildHistorySummary(): Promise<void> {
 
 	const settings = getSettings();
 	const totals = new Map<string, { total: number; currency: string }>();
+	let savedTotal = 0;
 
 	for (const tr of trs) {
 		const typeEl = tr.querySelector('.wht_type');
@@ -594,7 +595,8 @@ async function buildHistorySummary(): Promise<void> {
 		if (!/purchase|покупк/i.test(type)) {
 			continue; // skip refunds, gifts, top-ups, market ops
 		}
-		const year = (tr.querySelector('.wht_date')?.textContent ?? '').match(/\d{4}/)?.[0];
+		const dateText = (tr.querySelector('.wht_date')?.textContent ?? '').trim();
+		const year = dateText.match(/\d{4}/)?.[0];
 		if (!year) {
 			continue;
 		}
@@ -609,6 +611,13 @@ async function buildHistorySummary(): Promise<void> {
 			cur.total += parsed.amount;
 		} else if (!cur) {
 			totals.set(year, { total: parsed.amount, currency: parsed.currency });
+		}
+
+		// savings: strikethrough original price vs actually paid
+		const origText = (tr.querySelector('.wht_original_price')?.textContent ?? '').trim();
+		const orig = parsePrice(origText);
+		if (orig && orig.currency === parsed.currency && orig.amount > parsed.amount) {
+			savedTotal += orig.amount - parsed.amount;
 		}
 	}
 
@@ -628,6 +637,14 @@ async function buildHistorySummary(): Promise<void> {
 		const rate = await getRateCached(grandCurrency, settings.targetCurrency);
 		if (rate > 0) {
 			grandConverted = ` ≈ ${formatConverted(grand * rate, settings.targetCurrency)}`;
+		}
+	}
+
+	let savedConverted = '';
+	if (settings.enabled && savedTotal > 0 && grandCurrency !== settings.targetCurrency) {
+		const rate = await getRateCached(grandCurrency, settings.targetCurrency);
+		if (rate > 0) {
+			savedConverted = ` ≈ ${formatConverted(savedTotal * rate, settings.targetCurrency)}`;
 		}
 	}
 
@@ -651,8 +668,21 @@ async function buildHistorySummary(): Promise<void> {
 	accent.style.cssText = 'width:64px;height:3px;background:#ff751a;border-radius:2px;margin:0 0 12px 0;';
 
 	const grandLine = document.createElement('div');
-	grandLine.style.cssText = 'font-size:26px;font-weight:700;color:#66c0f4;margin-bottom:10px;';
+	grandLine.style.cssText = 'font-size:26px;font-weight:700;color:#66c0f4;margin-bottom:6px;';
 	grandLine.textContent = `${formatConverted(grand, grandCurrency)}${grandConverted}`;
+
+	const extraLines = document.createElement('div');
+	extraLines.style.cssText = 'margin-bottom:8px;';
+
+	if (savedTotal > 0) {
+		const savedLine = document.createElement('div');
+		savedLine.style.cssText = 'font-size:14.5px;font-weight:600;color:#a3d977;margin-bottom:8px;';
+		savedLine.textContent = t(
+			`↓ Сэкономлено на скидках: ${formatConverted(savedTotal, grandCurrency)}${savedConverted}`,
+			`↓ Saved on discounts: ${formatConverted(savedTotal, grandCurrency)}${savedConverted}`,
+		);
+		extraLines.appendChild(savedLine);
+	}
 
 	const loadMoreBtn = document.createElement('button');
 	loadMoreBtn.type = 'button';
@@ -722,6 +752,7 @@ async function buildHistorySummary(): Promise<void> {
 	content.appendChild(title);
 	content.appendChild(accent);
 	content.appendChild(grandLine);
+	content.appendChild(extraLines);
 	content.appendChild(chart);
 	content.appendChild(loadMoreBtn);
 
